@@ -76,6 +76,29 @@ func GameSets(row []byte) (int, []Set) {
 	return gameNumber, sets
 }
 
+func PowerSet(sets []Set) int {
+	red, blue, green := 0, 0, 0
+	for _, set := range sets {
+		if set.Red > red {
+			red = set.Red
+		}
+
+		if set.Green > green {
+			green = set.Green
+		}
+
+		if set.Blue > blue {
+			blue = set.Blue
+		}
+	}
+
+	if red == 0 || green == 0 || blue == 0 {
+		panic("zero")
+	}
+
+	return red * green * blue
+}
+
 func GamePossible(sets []Set) bool {
 	for _, s := range sets {
 		if s.Red > 12 || s.Green > 13 || s.Blue > 14 {
@@ -87,14 +110,18 @@ func GamePossible(sets []Set) bool {
 }
 
 func main() {
-	total := 0
+	puzzleOne := 0
+	puzzleTwo := 0
 
 	for _, row := range ReadInputRows() {
 		gameNumber, sets := GameSets(row)
 		if GamePossible(sets) {
-			total += gameNumber
+			puzzleOne += gameNumber
 		}
+
+		puzzleTwo += PowerSet(sets)
 	}
 
-	fmt.Println(total)
+	fmt.Println("Puzzle One: ", puzzleOne)
+	fmt.Println("Puzzle Two: ", puzzleTwo)
 }
