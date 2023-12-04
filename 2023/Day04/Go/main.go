@@ -35,6 +35,16 @@ func (c Card) Score() int {
 	return int(math.Pow(2, float64(winnerCount)-1))
 }
 
+func (c Card) ChildrenCards() []int {
+	resp := make([]int, 0)
+
+	for i := 1; i <= len(c.Winners()); i++ {
+		resp = append(resp, c.Number+i)
+	}
+
+	return resp
+}
+
 func Atoi(b []byte) int {
 	num, err := strconv.Atoi(string(b))
 	if err != nil {
@@ -52,8 +62,10 @@ func SplitInts(b []byte) []int {
 		if b[i] == ' ' && len(buff) != 0 {
 			resp = append(resp, Atoi(buff))
 			buff = buff[:0]
+
 		} else if b[i] != ' ' {
 			buff = append(buff, b[i])
+
 		}
 	}
 
@@ -71,22 +83,32 @@ func Cards(rows [][]byte) map[int]Card {
 			Number:  i + 1,
 			Winning: SplitInts(row[10:39]),
 			Have:    SplitInts(row[42:]),
-			//Winning: SplitInts(row[8:23]),
-			//Have:    SplitInts(row[25:]),
+			// Winning: SplitInts(row[8:23]),
+			// Have:    SplitInts(row[25:]),
 		}
 	}
 
 	return resp
 }
 
+func CountCards(c Card, cards map[int]Card, total *int) {
+	*total++
+
+	for _, children := range c.ChildrenCards() {
+		CountCards(cards[children], cards, total)
+	}
+}
+
 func main() {
-	total := 0
+	puzzleOne, puzzleTwo := 0, 0
+	// puzzleOne := 0
 	cards := Cards(ReadInputRows())
 
-	for i, c := range cards {
-		fmt.Println(i, c.Score())
-		total += c.Score()
+	for _, c := range cards {
+		CountCards(c, cards, &puzzleTwo)
+		puzzleOne += c.Score()
 	}
 
-	fmt.Println(total)
+	fmt.Println("Puzzle One: ", puzzleOne)
+	fmt.Println("Puzzle Two: ", puzzleTwo)
 }
