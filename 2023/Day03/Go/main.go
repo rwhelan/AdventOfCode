@@ -32,7 +32,7 @@ func SymbolIdx(schematic []byte) map[int]map[int]struct{} {
 	return resp
 }
 
-func Adjacent(x, y int, symbols map[int]map[int]struct{}) bool {
+func AdjacentSymbol(x, y int, symbols map[int]map[int]struct{}) bool {
 	for ly := -1; ly < 2; ly++ {
 		for lx := -1; lx < 2; lx++ {
 			if _, ok := symbols[ly+y][lx+x]; ok {
@@ -44,8 +44,7 @@ func Adjacent(x, y int, symbols map[int]map[int]struct{}) bool {
 	return false
 }
 
-func main() {
-	schematic := ReadInputFile()
+func PuzzleOne(schematic []byte) int {
 	symbols := SymbolIdx(schematic)
 
 	total := 0
@@ -63,7 +62,7 @@ func main() {
 				buff = append(buff, c)
 
 			} else if len(buff) != 0 {
-				if Adjacent(startidx, y, symbols) || Adjacent(endidx, y, symbols) {
+				if AdjacentSymbol(startidx, y, symbols) || AdjacentSymbol(endidx, y, symbols) {
 					num, err := strconv.Atoi(string(buff))
 					if err != nil {
 						panic(err)
@@ -73,10 +72,11 @@ func main() {
 				}
 				startidx = 0
 				buff = buff[:0]
+
 			}
 		}
 
-		if len(buff) != 0 && Adjacent(startidx, y, symbols) || Adjacent(len(row)-1, y, symbols) {
+		if len(buff) != 0 && AdjacentSymbol(startidx, y, symbols) || AdjacentSymbol(len(row)-1, y, symbols) {
 			num, err := strconv.Atoi(string(buff))
 			if err != nil {
 				panic(err)
@@ -86,5 +86,10 @@ func main() {
 		}
 	}
 
-	fmt.Println(total)
+	return total
+}
+
+func main() {
+	schematic := ReadInputFile()
+	fmt.Println("Puzzle One: ", PuzzleOne(schematic))
 }
