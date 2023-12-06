@@ -17,7 +17,6 @@ func (r Race) WaysToWin() int {
 		if (r.time-i)*i > r.dist {
 			t++
 		}
-		// fmt.Println("Wait: ", i, "Delta: ", r.time-i)
 	}
 
 	return t
