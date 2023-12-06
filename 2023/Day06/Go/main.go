@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"strconv"
+)
 
 type Race struct {
 	time int
@@ -53,6 +57,15 @@ func Parse() []Race {
 	return resp
 }
 
+func ConcatInts(i []int) int {
+	s := bytes.Buffer{}
+	for _, v := range i {
+		s.WriteString(strconv.Itoa(v))
+	}
+
+	return Atoi(s.Bytes())
+}
+
 func main() {
 	races := Parse()
 	t := 1
@@ -61,5 +74,20 @@ func main() {
 		t *= race.WaysToWin()
 	}
 
-	fmt.Println(t)
+	fmt.Println("Puzzle One: ", t)
+
+	times := make([]int, len(races))
+	dist := make([]int, len(races))
+
+	for i := 0; i < len(races); i++ {
+		times[i] = races[i].time
+		dist[i] = races[i].dist
+	}
+
+	race := Race{
+		time: ConcatInts(times),
+		dist: ConcatInts(dist),
+	}
+
+	fmt.Println("Puzzle Two: ", race.WaysToWin())
 }
