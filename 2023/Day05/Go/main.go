@@ -91,8 +91,7 @@ func Walk(s int, m map[string]Map) int {
 	return s
 }
 
-func main() {
-	seeds, maps := Parse()
+func PuzzleOne(seeds []int, maps map[string]Map) int {
 	locations := make([]int, len(seeds))
 
 	for i, s := range seeds {
@@ -100,5 +99,28 @@ func main() {
 	}
 	slices.Sort(locations)
 
-	fmt.Println("Puzzle One:", locations[0])
+	return locations[0]
+}
+
+func PuzzleTwo(seeds []int, maps map[string]Map) int {
+	min := 999999999999999
+
+	for i := 0; i < len(seeds); i += 2 {
+		for j := 0; j < seeds[i+1]; j++ {
+			l := Walk(seeds[i]+j, maps)
+
+			if l < min {
+				min = l
+			}
+		}
+	}
+
+	return min
+}
+
+func main() {
+	seeds, maps := Parse()
+
+	// fmt.Println("Puzzle One:", PuzzleOne(seeds, maps))
+	fmt.Println("Puzzle Two:", PuzzleTwo(seeds, maps))
 }
