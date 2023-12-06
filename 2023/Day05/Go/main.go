@@ -92,13 +92,12 @@ func Walk(s int, m map[string]Map) int {
 }
 
 func main() {
-	seeds, m := Parse()
+	seeds, maps := Parse()
 	locations := make([]int, len(seeds))
 
 	for i, s := range seeds {
-		locations[i] = Walk(s, m)
+		locations[i] = Walk(s, maps)
 	}
-
 	slices.Sort(locations)
 
 	fmt.Println("Puzzle One:", locations[0])
