@@ -7,18 +7,6 @@ import (
 	"sort"
 )
 
-// type HAND_TYPE int
-
-// const (
-// 	FIVE_OF_A_KIND HAND_TYPE = iota
-// 	FOUR_OF_A_KIND
-// 	FULL_HOUSE
-// 	THREE_OF_A_KIND
-// 	TWO_PAIR
-// 	ONE_PAIR
-// 	HIGH_CARD
-// )
-
 var cardOrder = map[byte]int{
 	'2': 1, '3': 2, '4': 3, '5': 4,
 	'6': 5, '7': 6, '8': 7, '9': 8,
@@ -45,24 +33,71 @@ type Hand struct {
 	bid   int
 }
 
-// Converts hand into number (type)
-// QQQJJ = 33322
-// QQQJA = 33311
-func handNumberValue(h Hand) int {
+func handValues(cards []byte) []int {
 	m := make(map[byte]int)
-	for _, c := range h.cards {
+	for _, c := range cards {
 		m[c]++
 	}
 
-	n := make([]int, len(h.cards))
-	for i, c := range h.cards {
+	n := make([]int, len(cards))
+	for i, c := range cards {
 		n[i] = m[c]
 	}
 
 	slices.Sort(n)
+	slices.Reverse(n)
 
+	return n
+}
+
+func handNumber(cards []byte) int {
+	n := handValues(cards)
+
+	slices.Reverse(n)
 	resp := 0
-	for i := 0; i < len(h.cards); i++ {
+	for i := 0; i < len(cards); i++ {
+		resp += n[i] * int(math.Pow10(i))
+	}
+
+	return resp
+}
+
+func addjoker(values []int) []int {
+	resp := append([]int{values[0]}, values...)
+	for i := 0; i < resp[0]; i++ {
+		resp[i]++
+	}
+
+	return resp
+}
+
+func handNumberWithJokers(cards []byte) int {
+	jokers := 0
+	for _, c := range cards {
+		if c == 'J' {
+			jokers++
+		}
+	}
+
+	if jokers == 5 {
+		return 55555
+	}
+
+	cardsWOjokers := make([]byte, 0, len(cards)-jokers)
+	for _, c := range cards {
+		if c != 'J' {
+			cardsWOjokers = append(cardsWOjokers, c)
+		}
+	}
+
+	n := handValues(cardsWOjokers)
+	for i := 0; i < jokers; i++ {
+		n = addjoker(n)
+	}
+
+	slices.Reverse(n)
+	resp := 0
+	for i := 0; i < len(cards); i++ {
 		resp += n[i] * int(math.Pow10(i))
 	}
 
@@ -70,8 +105,8 @@ func handNumberValue(h Hand) int {
 }
 
 func (h Hand) Beats(other Hand) bool {
-	thisHandType := handNumberValue(h)
-	otherHandType := handNumberValue(other)
+	thisHandType := handNumberWithJokers(h.cards)
+	otherHandType := handNumberWithJokers(other.cards)
 
 	if thisHandType != otherHandType {
 		return thisHandType > otherHandType
