@@ -15,38 +15,40 @@ func ReadColumn(g Array2D, c int) []byte {
 	return resp
 }
 
-func ColumnValue(c []byte) int {
-	ptr, cur, val := 0, 0, 0
+func ColumnValue(column []byte) int {
+	total := 0
 
-	ptrSeek := func() {
-		for ; c[ptr] != '.'; ptr++ {
+	addRocks := func(c, n int) {
+		for i := 0; i < n; i++ {
+			total += len(column) - (c + i)
 		}
 	}
 
-	curSeek := func() bool {
-		for ; c[cur] != '0'; cur++ {
-			fmt.Println(cur, len(c)-1)
-			if cur == len(c)-1 {
-				return true
+	for i := 0; i < len(column); i++ {
+		rocks := 0
+		for j, b := range column[i:] {
+			if b == 'O' {
+				rocks++
+			}
+
+			if b == '#' || i+j == len(column)-1 {
+				addRocks(i, rocks)
+				i = j + i
+				break
 			}
 		}
-
-		return false
 	}
 
-	for !curSeek() {
-		fmt.Println("H")
-		ptrSeek()
-		val += len(c) - ptr
-	}
-
-	return val
+	return total
 }
 
 func main() {
 	grid := Parse()
 
-	c := ReadColumn(grid, 1)
-	fmt.Println(string(c))
-	fmt.Println(ColumnValue(c))
+	total := 0
+	for i := range grid[0] {
+		total += ColumnValue(ReadColumn(grid, i))
+	}
+
+	fmt.Println(total)
 }
