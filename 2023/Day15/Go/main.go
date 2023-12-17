@@ -78,6 +78,7 @@ func RemoveLens(boxes []*Lens, label []byte) {
 		} else {
 			boxes[boxId] = nil
 		}
+
 		return
 	}
 
@@ -86,6 +87,7 @@ func RemoveLens(boxes []*Lens, label []byte) {
 		if c.Label == string(label) {
 			prev.Next = c.Next
 		}
+
 		prev = c
 		c = c.Next
 	}
@@ -98,8 +100,10 @@ func PuzzleTwo(input []byte) int {
 		switch {
 		case seq[len(seq)-1] == '-':
 			RemoveLens(boxes, seq[:len(seq)-1])
+
 		case seq[len(seq)-2] == '=':
 			InsertLens(boxes, seq[:len(seq)-2], int(seq[len(seq)-1])-0x30)
+
 		default:
 			fmt.Println("Unsure what to do with:", string(seq))
 		}
