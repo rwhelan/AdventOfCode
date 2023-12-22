@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Node struct {
 	Y, X    int
@@ -10,8 +12,6 @@ type Node struct {
 }
 
 type Grid [][]*Node
-
-var seen map[[2]int]bool
 
 func (g Grid) Print() {
 	for _, row := range g {
@@ -40,6 +40,20 @@ func (g Grid) Flop() {
 	}
 }
 
+func (g Grid) Count(b byte) int {
+	total := 0
+
+	for _, row := range g {
+		for _, node := range row {
+			if node.v == b {
+				total++
+			}
+		}
+	}
+
+	return total
+}
+
 func (g Grid) FindUVNs(node *Node) []*Node {
 	resp := make([]*Node, 0, 4)
 	for _, d := range [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}} {
@@ -56,13 +70,38 @@ func (g Grid) FindUVNs(node *Node) []*Node {
 			continue
 		}
 
-		if _, ok := seen[[2]int{node.Y + yd, node.X + xd}]; !ok {
-			resp = append(resp, g[node.Y+yd][node.X+xd])
-			seen[[2]int{node.Y + yd, node.X + xd}] = true
-		}
+		resp = append(resp, g[node.Y+yd][node.X+xd])
 	}
 
 	return resp
+}
+
+type QueueSet struct {
+	set   map[[2]int]bool
+	queue chan *Node
+}
+
+func NewQueueSet() *QueueSet {
+	return &QueueSet{
+		set:   make(map[[2]int]bool),
+		queue: make(chan *Node, 1000000),
+	}
+}
+
+func (q *QueueSet) AddNode(node *Node) {
+	if !q.set[[2]int{node.X, node.Y}] {
+		q.queue <- node
+		q.set[[2]int{node.X, node.Y}] = true
+	}
+}
+
+func (q *QueueSet) GetNext() *Node {
+	select {
+	case node := <-q.queue:
+		return node
+	default:
+		return nil
+	}
 }
 
 func ParseMap() (Grid, *Node) {
@@ -91,33 +130,25 @@ func ParseMap() (Grid, *Node) {
 }
 
 func main() {
-	seen = make(map[[2]int]bool)
-
 	grid, startNode := ParseMap()
-	q := grid.FindUVNs(startNode)
+	queue := NewQueueSet()
+	queue.AddNode(startNode)
 
-	for i := 0; i < 64000; i++ {
-		nq := make([]*Node, 0)
-		for _, n := range q {
+	for i := 0; i <= 64; i++ {
+		nS := make([]*Node, 0, 1000)
+		for n := queue.GetNext(); n != nil; n = queue.GetNext() {
 			n.Visited = true
 			n.v = '0'
-			nq = append(nq, grid.FindUVNs(n)...)
+			nS = append(nS, grid.FindUVNs(n)...)
+		}
+
+		for _, node := range nS {
+			queue.AddNode(node)
 		}
 
 		grid.Flop()
-
-		q = nq
 	}
 
 	grid.Flop()
-
-	total := 0
-	for s := range seen {
-		if grid[s[0]][s[1]].v == '0' {
-			total++
-		}
-	}
-
-	grid.Print()
-	fmt.Println(total)
+	fmt.Println("Puzzle One:", grid.Count('0'))
 }
