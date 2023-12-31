@@ -55,18 +55,38 @@ func (c Coord) Below() Coord {
 	}
 }
 
+func (c Coord) Above() Coord {
+	return Coord{
+		X: c.X,
+		Y: c.Y,
+		Z: c.Z + 1,
+	}
+}
+
 // Block ======================================================================
 
 type Block struct {
 	Label  string
 	matrix Matrix
 	coords []*Coord
+	o      string
 }
 
 func (b Block) belowBlocks() []*Block {
 	resp := make([]*Block, 0, 8)
 	for _, c := range b.coords {
 		if block := b.matrix.GetCoord(c.Below()); block != nil {
+			resp = append(resp, block)
+		}
+	}
+
+	return resp
+}
+
+func (b Block) aboveBlocks() []*Block {
+	resp := make([]*Block, 0, 8)
+	for _, c := range b.coords {
+		if block := b.matrix.GetCoord(c.Above()); block != nil {
 			resp = append(resp, block)
 		}
 	}
@@ -137,6 +157,7 @@ func ParseBlock(row []byte, label string) *Block {
 	return &Block{
 		Label:  label,
 		coords: coords,
+		o:      string(row),
 	}
 }
 
@@ -144,8 +165,9 @@ func ParseBlock(row []byte, label string) *Block {
 
 func main() {
 	height := 375
-
 	matrix := NewMatrix(height)
+	blocks := make([]*Block, 0)
+
 	for _, row := range ReadInputRows() {
 		h := md5.New()
 		h.Write(row)
@@ -153,6 +175,8 @@ func main() {
 
 		block := ParseBlock(row, label)
 		matrix.AddBlock(block)
+
+		blocks = append(blocks, block)
 	}
 
 	for z := 0; z < height; z++ {
@@ -164,4 +188,17 @@ func main() {
 			}
 		}
 	}
+
+	count := 0
+	for i, b := range blocks {
+		if len(b.aboveBlocks()) == 0 {
+			fmt.Println("DO", i)
+			count++
+		} else {
+			fmt.Println(i, b.o)
+		}
+	}
+
+	fmt.Println(count)
+
 }
