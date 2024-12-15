@@ -21,10 +21,20 @@ func main() {
 	sort.Ints(colOne)
 	sort.Ints(colTwo)
 
-	total := 0
-	for i := range colOne {
-		total += int(math.Abs(float64(colOne[i] - colTwo[i])))
+	pOneTotal := 0
+	pTwoLookup := make(map[int]int)
+	for i, num := range colTwo {
+		pOneTotal += int(math.Abs(float64(colOne[i] - colTwo[i])))
+		pTwoLookup[num]++
 	}
 
-	fmt.Println(total)
+	fmt.Println("Problem One:", pOneTotal)
+
+	pTwoTotal := 0
+	for _, num := range colOne {
+		pTwoTotal += num * pTwoLookup[num]
+	}
+
+	fmt.Println("Problem Two:", pTwoTotal)
+
 }
